@@ -1,43 +1,86 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-import { Platform } from 'react-native';
+import { Tabs } from "expo-router";
+import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, View } from "react-native";
 
-import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+export default function TabsLayout() { // ✅ تم تصحيح الخطأ بإزالة التكرار
+  const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = await AsyncStorage.getItem("userToken");
+      if (!token) {
+        router.replace('/'); // إعادة توجيه المستخدم إلى تسجيل الدخول إذا لم يكن مسجلًا
+      } else {
+        setIsAuthenticated(true);
+      }
+      setLoading(false);
+    };
+
+    checkAuth();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null; // لا يتم تحميل `Tabs` إذا لم يكن المستخدم مسجلًا
+  }
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: 'absolute',
-          },
-          default: {},
-        }),
-      }}>
+        tabBarActiveTintColor: "#0077B6",
+        headerStyle: { backgroundColor: "#000000" },
+        headerShadowVisible: false,
+        tabBarBadgeStyle: { backgroundColor: "#000000" },
+        headerTintColor: "#fff",
+        tabBarLabelStyle: { color: 'black' },
+      }}
+    >
       <Tabs.Screen
-        name="index"
+        name="home"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          headerShown: false,
+          tabBarIcon: ({ focused }) => (
+            <Ionicons name={focused ? "home-sharp" : "home-outline"} color={"black"} size={30} />
+          ),
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="Services"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          headerTitle: "Service",
+          tabBarIcon: ({ focused }) => (
+            <Ionicons name={focused ? "apps" : "apps-outline"} color={"black"} size={30} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="Activity"
+        options={{
+          headerTitle: "Activity",
+          tabBarIcon: ({ focused }) => (
+            <Ionicons name={focused ? "reader" : "reader-outline"} color={"black"} size={30} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="Account"
+        options={{
+          headerTitle: "Account",
+          tabBarIcon: ({ focused }) => (
+            <Ionicons name={focused ? "person" : "person-outline"} color={"black"} size={30} />
+          ),
         }}
       />
     </Tabs>
