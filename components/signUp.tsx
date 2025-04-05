@@ -18,176 +18,112 @@ import Ripple from 'react-native-material-ripple';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function CreateAccount() {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+export default function RiderSignUp() {
+  const [fullName, setFullName] = useState('');
   const [mobile, setMobile] = useState('');
-  const [email, setEmail] = useState('');
+  const [emergencyContact, setEmergencyContact] = useState('');
+  const [vehicleType, setVehicleType] = useState('');
+  const [plateNumber, setPlateNumber] = useState('');
+  const [vehicleColor, setVehicleColor] = useState('');
+  const [vehicleBrand, setVehicleBrand] = useState('');
+  const [vehicleModel, setVehicleModel] = useState('');
+  const [fuelType, setFuelType] = useState('');
+  const [maxPassengers, setMaxPassengers] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const dismissKeyboard = () => {
-    Keyboard.dismiss();
-  };
+  const dismissKeyboard = () => Keyboard.dismiss();
 
   const showToast = (message: string) => {
-    if (Platform.OS === 'android') {
-      ToastAndroid.show(message, ToastAndroid.SHORT);
-    } else {
-      Alert.alert(message);
-    }
+    Platform.OS === 'android'
+      ? ToastAndroid.show(message, ToastAndroid.SHORT)
+      : Alert.alert(message);
   };
 
   const handleSignUp = async () => {
-    if (!firstName.trim() || !lastName.trim() || !mobile.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
-      showToast('All fields are required except email.');
-      return;
+    if (!fullName || !mobile || !password || !confirmPassword) {
+      return showToast('Please fill all required fields');
     }
-
     if (!/^[0-9]{8}$/.test(mobile)) {
-      showToast('Mobile number must be exactly 8 digits.');
-      return;
+      return showToast('Mobile must be 8 digits');
     }
-
-    if (password.trim() !== confirmPassword.trim()) {
-      showToast('Passwords do not match');
-      return;
+    if (password !== confirmPassword) {
+      return showToast('Passwords do not match');
     }
-
     if (password.length < 8) {
-      showToast('Password must be at least 8 characters long');
-      return;
+      return showToast('Password too short');
     }
 
-    if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      showToast('Invalid email format.');
-      return;
-    }
+    const riderData = {
+      fullName,
+      phoneNumber: mobile,
+      address: '',
+      userType: 'rider',
+      password,
+      riderInfo: {
+        emergencyContact,
+        vehicleType,
+        plateNumber,
+        vehicleColor,
+        vehicleBrand,
+        vehicleModel,
+        fuelType,
+        maxPassengers: parseInt(maxPassengers),
+      },
+    };
 
     try {
-      const requestBody: Record<string, string> = {
-        firstName,
-        lastName,
-        mobile,
-        password,
-      };
-
-      if (email.trim()) {
-        requestBody.email = email;
-      }
-
-      const response = await fetch('http://192.168.11.66:5000/users', {
+      const res = await fetch('http://192.168.11.66:5000/api/riders/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify(riderData),
       });
 
-      const result = await response.json();
-      console.log('✅ Server Response:', result);
+      const result = await res.json();
+      if (!res.ok || !result) return showToast(result.message || 'Signup failed');
 
-      if (!response.ok) {
-        showToast(result.error || 'Signup Failed');
-        return;
-      }
-
-      if (!result.token) {
-        showToast('No token received from server');
-        return;
-      }
-
-      await AsyncStorage.setItem('userToken', result.token);
-      showToast('Account created successfully');
+      await AsyncStorage.setItem('riderToken', result.token);
+      showToast('Registration successful');
       router.push('/');
-
-    } catch (err: unknown) {
-      console.error('Signup Error:', err);
-      showToast('An error occurred. Please try again later.');
+    } catch (err) {
+      console.log(err);
+      showToast('Something went wrong');
     }
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={{ flex: 1 }}
-    >
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
       <TouchableWithoutFeedback onPress={dismissKeyboard}>
-        <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={{ flexGrow: 1, paddingBottom: 50 }}
-          keyboardShouldPersistTaps="handled"
-        >
+        <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 20 }}>
           <View style={styles.container}>
-            <Text style={styles.title}>Hello! Register to get started</Text>
+            <Text style={styles.title}>Register as Rider</Text>
 
-            <View style={styles.formInputWrapper}>
-              <Octicons name="person" size={20} color="#808080" />
-              <TextInput
-                style={styles.input}
-                value={firstName}
-                onChangeText={setFirstName}
-                placeholder="First Name"
-                placeholderTextColor="black"
-              />
-            </View>
-
-            <View style={styles.formInputWrapper}>
-              <Octicons name="person" size={20} color="#808080" />
-              <TextInput
-                style={styles.input}
-                value={lastName}
-                onChangeText={setLastName}
-                placeholder="Last Name"
-                placeholderTextColor="black"
-              />
-            </View>
-
-            <View style={styles.formInputWrapper}>
-              <Octicons name="device-mobile" size={20} color="#808080" />
-              <TextInput
-                style={styles.input}
-                value={mobile}
-                onChangeText={setMobile}
-                placeholder="Mobile Number"
-                placeholderTextColor="black"
-                keyboardType="phone-pad"
-              />
-            </View>
-
-            <View style={styles.formInputWrapper}>
-              <Octicons name="mail" size={20} color="#808080" />
-              <TextInput
-                style={styles.input}
-                value={email}
-                onChangeText={setEmail}
-                placeholder="Email Address (Optional)"
-                placeholderTextColor="black"
-                keyboardType="email-address"
-              />
-            </View>
-
-            <View style={styles.formInputWrapper}>
-              <Octicons name="lock" size={20} color="#808080" />
-              <TextInput
-                style={styles.input}
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                placeholder="Password"
-                placeholderTextColor="black"
-              />
-            </View>
-
-            <View style={styles.formInputWrapper}>
-              <Octicons name="lock" size={20} color="#808080" />
-              <TextInput
-                style={styles.input}
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                secureTextEntry
-                placeholder="Confirm Password"
-                placeholderTextColor="black"
-              />
-            </View>
+            {[{ val: fullName, set: setFullName, icon: 'person', placeholder: 'Full Name' },
+              { val: mobile, set: setMobile, icon: 'device-mobile', placeholder: 'Mobile Number', keyboardType: 'numeric' },
+              { val: emergencyContact, set: setEmergencyContact, icon: 'device-mobile', placeholder: 'Emergency Contact', keyboardType: 'numeric' },
+              { val: vehicleType, set: setVehicleType, icon: 'gear', placeholder: 'Vehicle Type (car/motorbike/bicycle)' },
+              { val: plateNumber, set: setPlateNumber, icon: 'number', placeholder: 'Plate Number' },
+              { val: vehicleColor, set: setVehicleColor, icon: 'paintcan', placeholder: 'Vehicle Color' },
+              { val: vehicleBrand, set: setVehicleBrand, icon: 'tools', placeholder: 'Vehicle Brand' },
+              { val: vehicleModel, set: setVehicleModel, icon: 'tools', placeholder: 'Vehicle Model' },
+              { val: fuelType, set: setFuelType, icon: 'flame', placeholder: 'Fuel Type' },
+              { val: maxPassengers, set: setMaxPassengers, icon: 'people', placeholder: 'Max Passengers', keyboardType: 'numeric' },
+              { val: password, set: setPassword, icon: 'lock', placeholder: 'Password', secure: true },
+              { val: confirmPassword, set: setConfirmPassword, icon: 'lock', placeholder: 'Confirm Password', secure: true }
+            ].map((field, index) => (
+              <View style={styles.formInputWrapper} key={index}>
+                <Octicons name="person" size={20} color="#808080" />
+                <TextInput
+                  style={styles.input}
+                  value={field.val}
+                  onChangeText={field.set}
+                  placeholder={field.placeholder}
+                  placeholderTextColor="black"
+                  keyboardType={ field.keyboardType as any|| 'default'}
+                  secureTextEntry={field.secure || false}
+                />
+              </View>
+            ))}
 
             <Ripple
               rippleColor="rgb(0, 0, 0)"
@@ -225,7 +161,7 @@ const styles = StyleSheet.create({
     fontSize: 25,
     fontWeight: 'bold',
     color: '#000',
-    marginBottom: 60,
+    marginBottom: 40,
   },
   formInputWrapper: {
     flexDirection: 'row',
