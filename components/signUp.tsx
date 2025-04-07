@@ -57,19 +57,15 @@ export default function RiderSignUp() {
     const riderData = {
       fullName,
       phoneNumber: mobile,
-      address: '',
-      userType: 'rider',
       password,
-      riderInfo: {
-        emergencyContact,
-        vehicleType,
-        plateNumber,
-        vehicleColor,
-        vehicleBrand,
-        vehicleModel,
-        fuelType,
-        maxPassengers: parseInt(maxPassengers),
-      },
+      emergencyContact,
+      vehicleType,
+      plateNumber,
+      vehicleColor,
+      vehicleBrand,
+      vehicleModel,
+      fuelType,
+      maxPassengers: parseInt(maxPassengers),
     };
 
     try {
@@ -103,7 +99,7 @@ export default function RiderSignUp() {
               { val: emergencyContact, set: setEmergencyContact, icon: 'device-mobile', placeholder: 'Emergency Contact', keyboardType: 'numeric' },
               { val: vehicleType, set: setVehicleType, icon: 'gear', placeholder: 'Vehicle Type (car/motorbike/bicycle)' },
               { val: plateNumber, set: setPlateNumber, icon: 'number', placeholder: 'Plate Number' },
-              { val: vehicleColor, set: setVehicleColor, icon: 'paintcan', placeholder: 'Vehicle Color' },
+              { val: vehicleColor, set: setVehicleColor, icon: 'person', placeholder: 'Vehicle Color' },
               { val: vehicleBrand, set: setVehicleBrand, icon: 'tools', placeholder: 'Vehicle Brand' },
               { val: vehicleModel, set: setVehicleModel, icon: 'tools', placeholder: 'Vehicle Model' },
               { val: fuelType, set: setFuelType, icon: 'flame', placeholder: 'Fuel Type' },
@@ -112,14 +108,14 @@ export default function RiderSignUp() {
               { val: confirmPassword, set: setConfirmPassword, icon: 'lock', placeholder: 'Confirm Password', secure: true }
             ].map((field, index) => (
               <View style={styles.formInputWrapper} key={index}>
-                <Octicons name="person" size={20} color="#808080" />
+                <Octicons name={field.icon as any} size={20} color="#808080" />
                 <TextInput
                   style={styles.input}
                   value={field.val}
                   onChangeText={field.set}
                   placeholder={field.placeholder}
                   placeholderTextColor="black"
-                  keyboardType={ field.keyboardType as any|| 'default'}
+                  keyboardType={ field.keyboardType as any || 'default'}
                   secureTextEntry={field.secure || false}
                 />
               </View>

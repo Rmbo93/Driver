@@ -42,7 +42,8 @@ export default function SignIn() {
       const response = await fetch('http://192.168.11.66:5000/api/riders/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mobile, password }),
+        body: JSON.stringify({ phoneNumber: mobile, password }),
+
       });
 
       const result = await response.json();
@@ -59,7 +60,7 @@ export default function SignIn() {
 
       await AsyncStorage.setItem('riderToken', result.token);
       Alert.alert('Success', 'Sign-in successful');
-      router.push('/home');
+      router.push('/Auth/UploadDocuments');
 
     } catch (err) {
       console.error('❌ Fetch Error:', err);

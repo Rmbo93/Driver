@@ -12,7 +12,7 @@ export default function TabsLayout() { // ✅ تم تصحيح الخطأ بإز�
 
   useEffect(() => {
     const checkAuth = async () => {
-      const token = await AsyncStorage.getItem("userToken");
+      const token = await AsyncStorage.getItem("riderToken");
       if (!token) {
         router.replace('/'); // إعادة توجيه المستخدم إلى تسجيل الدخول إذا لم يكن مسجلًا
       } else {
