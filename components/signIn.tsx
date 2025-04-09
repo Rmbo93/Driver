@@ -60,7 +60,12 @@ export default function SignIn() {
 
       await AsyncStorage.setItem('riderToken', result.token);
       Alert.alert('Success', 'Sign-in successful');
-      router.push('/Auth/UploadDocuments');
+      if (result.hasDocuments) {
+        router.push('/home');
+      } else {
+        router.push('/Auth/UploadDocuments');
+      }
+      
 
     } catch (err) {
       console.error('❌ Fetch Error:', err);

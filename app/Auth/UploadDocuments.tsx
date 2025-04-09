@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router } from 'expo-router';
 
 export default function UploadDocuments() {
   const [licenseImage, setLicenseImage] = useState<string | null>(null);
@@ -16,7 +17,7 @@ export default function UploadDocuments() {
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images, // ✅ صح
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
       quality: 0.5,
@@ -34,33 +35,40 @@ export default function UploadDocuments() {
   };
 
   const handleUpload = async () => {
+    console.log('🧠 handleUpload called');
+
     const token = await AsyncStorage.getItem('riderToken');
-    if (!token) return Alert.alert('خطأ', 'لم يتم العثور على التوكن');
+    console.log('📦 Rider Token:', token);
+
+    if (!token) {
+      Alert.alert('خطأ', 'لم يتم العثور على التوكن');
+      return;
+    }
 
     const formData = new FormData();
     if (licenseImage)
       formData.append('licenseImage', {
         uri: licenseImage,
         name: 'license.jpg',
-        type: 'image/jpeg',
+        type: 'image/jpg',
       } as any);
     if (insuranceImage)
       formData.append('insuranceImage', {
         uri: insuranceImage,
         name: 'insurance.jpg',
-        type: 'image/jpeg',
+        type: 'image/jpg',
       } as any);
     if (mechanicImage)
       formData.append('mechanicImage', {
         uri: mechanicImage,
         name: 'mechanic.jpg',
-        type: 'image/jpeg',
+        type: 'image/jpg',
       } as any);
     if (contractImage)
       formData.append('contractImage', {
         uri: contractImage,
         name: 'contract.jpg',
-        type: 'image/jpeg',
+        type: 'image/jpg',
       } as any);
 
     try {
@@ -68,20 +76,22 @@ export default function UploadDocuments() {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
-          // لا تحدد Content-Type يدوياً لـ multipart/form-data
         },
         body: formData,
       });
 
       const data = await response.json();
+      console.log('📡 Server Response:', data);
+
       if (response.ok) {
         Alert.alert('✅ تم', 'تم رفع الوثائق بنجاح');
+        router.push('/(tabs)/home')
       } else {
-        Alert.alert('❌ خطأ', data.message || 'فشل رفع الوثائق');
+        Alert.alert('❌ خطأ من الخادم', data.message || 'فشل رفع الوثائق');
       }
     } catch (error) {
       console.error('❌ Upload Error:', error);
-      Alert.alert('⚠️ خطأ', 'حدث خطأ أثناء رفع الملفات');
+      Alert.alert('⚠️ خطأ داخلي', 'حدث خطأ أثناء رفع الملفات');
     }
   };
 
