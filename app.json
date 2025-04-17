@@ -36,6 +36,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "b4c5d630-a5e9-4a33-84ff-6f538be6c3f5"
+      }
+    },
+    "owner": "rambo_93"
   }
 }
